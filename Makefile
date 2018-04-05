@@ -8,6 +8,8 @@ endif
 
 test:
 	genice CS1 -f vpython
+prepare: # might require root privilege.
+	pip install genice vpython
 install:
 	install -d $(DEST)
 	install -d $(DEST)/formats
