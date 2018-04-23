@@ -4,22 +4,18 @@ A [GenIce](https://github.com/vitroid/GenIce) plugin to visualize the structure 
 
 ## Requirements
 
-    % make prepare
-will install required packages via pip.
-
-* [GenIce](https://github.com/vitroid/GenIce) >=0.16.
+* [GenIce](https://github.com/vitroid/GenIce) >=0.23.
 * [vpython](https//vpython.org) 
 
 ## Installation
 
 ### System-wide installation
 
-Not supported.
+    % ./setup.py install
 
 ### Private installation
 
-    % make install
-or copy the files in formats/ into your local formats folder of GenIce.
+Copy the files in genice_vpython/formats/ into your local formats folder of GenIce.
 
 ## Usage
 

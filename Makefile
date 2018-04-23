@@ -8,12 +8,9 @@ endif
 
 test:
 	genice CS1 -f vpython
-prepare: # might require root privilege.
-	pip install genice vpython
 install:
-	install -d $(DEST)
-	install -d $(DEST)/formats
-	install formats/*py $(DEST)/formats
+	./setup.py install
 clean:
 	-rm $(ALL) *~ */*~
-	-rm -rf */__pycache__
+	-rm -rf build dist *.egg-info
+	-find . -name __pycache__ | xargs rm -rf
