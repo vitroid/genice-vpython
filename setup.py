@@ -18,7 +18,7 @@ with codecs.open(os.path.join(os.path.dirname(__file__), 'genice_vpython', '__in
 setup(
     name='genice_vpython',
     version=metadata['version'],
-    description='VPYTHON format pluing for GenIce.',
+    description='VPYTHON format plugin for GenIce.',
     #long_description=README + '\n\n' +  CHANGES,
     classifiers=[
         "Development Status :: 4 - Beta",
