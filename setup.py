@@ -14,12 +14,14 @@ with codecs.open(os.path.join(os.path.dirname(__file__), 'genice_vpython', '__in
                  encoding='utf8') as version_file:
     metadata = dict(re.findall(r"""__([a-z]+)__ = "([^"]+)""", version_file.read()))
     
+long_desc = "".join(open("README.md").readlines())
 
 setup(
     name='genice_vpython',
     version=metadata['version'],
     description='VPYTHON format plugin for GenIce.',
-    #long_description=README + '\n\n' +  CHANGES,
+    long_description=long_desc,
+    long_description_content_type="text/markdown",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
