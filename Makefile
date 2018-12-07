@@ -7,7 +7,7 @@ else
 endif
 
 test:
-	genice CS1 -f vpython
+	genice CS1 -r 2 2 2 -f vpython
 check:
 	./setup.py check
 install:
