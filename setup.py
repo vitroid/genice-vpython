@@ -38,14 +38,11 @@ setup(
     ],
     
     entry_points = {
-        'genice_format_hook4': [
-            'vpython      = genice_vpython.formats.vpython:hook4',
-        ],
-        'genice_format_hook6': [
-            'vpython      = genice_vpython.formats.vpython:hook6',
+        'genice_format': [
+            'vpython      = genice_vpython.formats.vpython',
         ],
     },
-    install_requires=['vpython', 'genice>=0.23'],
+    install_requires=['vpython', 'genice>=0.25'],
 
     license='MIT',
 )
