@@ -1,6 +1,16 @@
 # coding: utf-8
 """
 Direct visualization with VPython.
+
+Usage:
+    genice III -f vpython
+
+    opens a window in the web browser to show the image.
+
+Options:
+
+    No options available.
+
 """
 
 from collections import defaultdict

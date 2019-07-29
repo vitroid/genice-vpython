@@ -1,13 +1,12 @@
 .DELETE_ON_ERROR:
-OS=$(shell uname)
-ifeq ($(OS), Darwin)
-	DEST=~/Library/Application\ Support/GenIce
-else
-	DEST=~/.genice
-endif
 
 test:
 	genice CS1 -r 2 2 2 -f vpython
+
+%: temp_% replacer.py genice_vpython/formats/vpython.py
+	python replacer.py < $< > $@
+	-fgrep '%%' $@
+
 check:
 	./setup.py check
 install:

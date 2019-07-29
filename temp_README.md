@@ -1,17 +1,16 @@
-# [genice-vpython](https://github.com/vitroid/genice-vpython/)
+# [genice-vpython](%%url%%)
 
 A [GenIce](https://github.com/vitroid/GenIce) plugin to visualize the structure with [VPython](http://vpython.org).
 
-version 0.4
+version %%version%%
 
 ## Requirements
 
-* vpython
-* genice>=0.25
+* %%requires%%
 
 ## Installation from PyPI
 
-    % pip install genice_vpython
+    % pip install %%package%%
 
 ## Manual Installation
 
@@ -25,15 +24,7 @@ Copy the files in genice_svg/formats/ into your local formats/ folder.
 
 ## Usage
 
-    
-    Usage:
-        genice III -f vpython
-    
-        opens a window in the web browser to show the image.
-    
-    Options:
-    
-        No options available.
+    %%usage%%
 
 ## Test in place
 
