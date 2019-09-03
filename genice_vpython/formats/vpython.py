@@ -1,17 +1,10 @@
 # coding: utf-8
-"""
-Direct visualization with VPython.
 
-Usage:
-    genice III -f vpython
+desc = { "ref": {"VPython": "https://vpython.org"},
+         "brief": "Visualize in the browser.",
+         "usage": "No options available.",
+         }
 
-    opens a window in the web browser to show the image.
-
-Options:
-
-    No options available.
-
-"""
 
 from collections import defaultdict
 import colorsys
