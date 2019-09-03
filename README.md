@@ -2,7 +2,7 @@
 
 A [GenIce](https://github.com/vitroid/GenIce) plugin to visualize the structure with [VPython](http://vpython.org).
 
-version 0.4
+version 0.4.1
 
 ## Requirements
 
