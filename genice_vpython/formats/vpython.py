@@ -68,27 +68,21 @@ def hook4(lattice):
     graph = nx.Graph(lattice.spacegraph) #undirected
     cellmat = lattice.repcell.mat
     lattice.vpobjects = defaultdict(set)
-    for ring in cr.CountRings(graph).rings_iter(8):
+    for ring in cr.CountRings(graph, pos=lattice.reppositions).rings_iter(8):
         deltas = np.zeros((len(ring),3))
-        d2 = np.zeros(3)
         for k,i in enumerate(ring):
             d = lattice.reppositions[i] - lattice.reppositions[ring[0]]
             d -= np.floor(d+0.5)
             deltas[k] = d
-            dd = lattice.reppositions[ring[k]] - lattice.reppositions[ring[k-1]]
-            dd -= np.floor(dd+0.5)
-            d2 += dd
-        # d2 must be zeros
-        if np.all(np.absolute(d2) < 1e-5):
-            comofs = np.sum(deltas, axis=0) / len(ring)
-            deltas -= comofs
-            com = lattice.reppositions[ring[0]] + comofs
-            com -= np.floor(com)
-            # rel to abs
-            com    = np.dot(com-0.5,    cellmat)
-            deltas = np.dot(deltas, cellmat)
-            ringsize = '{0}'.format(len(ring))
-            lattice.vpobjects[ringsize] |= face(com, deltas)
+        comofs = np.sum(deltas, axis=0) / len(ring)
+        deltas -= comofs
+        com = lattice.reppositions[ring[0]] + comofs
+        com -= np.floor(com)
+        # rel to abs
+        com    = np.dot(com-0.5,    cellmat)
+        deltas = np.dot(deltas, cellmat)
+        ringsize = '{0}'.format(len(ring))
+        lattice.vpobjects[ringsize] |= face(com, deltas)
     lattice.logger.info("Hook4: end.")
 
 
