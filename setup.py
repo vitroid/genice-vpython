@@ -42,7 +42,7 @@ setup(
             'vpython      = genice_vpython.formats.vpython',
         ],
     },
-    install_requires=['vpython', 'genice>=0.25', 'countrings>=0.1.7'],
+    install_requires=['vpython', 'genice<2.0', 'countrings>=0.1.7'],
 
     license='MIT',
 )
