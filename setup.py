@@ -13,7 +13,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 with codecs.open(os.path.join(os.path.dirname(__file__), 'genice_vpython', '__init__.py'),
                  encoding='utf8') as version_file:
     metadata = dict(re.findall(r"""__([a-z]+)__ = "([^"]+)""", version_file.read()))
-    
+
 long_desc = "".join(open("README.md").readlines())
 
 setup(
@@ -36,13 +36,13 @@ setup(
     packages=['genice_vpython',
               'genice_vpython.formats',
     ],
-    
+
     entry_points = {
         'genice_format': [
             'vpython      = genice_vpython.formats.vpython',
         ],
     },
-    install_requires=['vpython', 'genice>=0.25'],
+    install_requires=['vpython', 'genice<2.0'],
 
     license='MIT',
 )

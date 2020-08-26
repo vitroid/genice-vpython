@@ -2,12 +2,12 @@
 
 A [GenIce](https://github.com/vitroid/GenIce) plugin to visualize the structure with [VPython](http://vpython.org).
 
-version 0.4.1
+version 0.4.3
 
 ## Requirements
 
 * vpython
-* genice>=0.25
+* genice<2.0
 
 ## Installation from PyPI
 

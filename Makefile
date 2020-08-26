@@ -3,7 +3,7 @@
 test:
 	genice CS1 -r 2 2 2 -f vpython
 
-%: temp_% replacer.py genice_vpython/formats/vpython.py
+%: temp_% replacer.py genice_vpython/formats/vpython.py genice_vpython/__init__.py
 	python replacer.py < $< > $@
 	-fgrep '%%' $@
 
