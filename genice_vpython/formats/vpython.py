@@ -26,6 +26,9 @@ import numpy as np
 import networkx as nx
 import vpython as vp
 from countrings import countrings_nx as cr
+import genice2.formats
+from genice2.decorators import timeit, banner
+from logging import getLogger
 
 hue_sat = {3:(60., 1.0), 4:(180, 0.8), 5:(0, 0.5), 6:(0, 0.0), 7:(240, 0.5), 8:(300, 0.5)}
 
@@ -34,7 +37,7 @@ sun /= np.linalg.norm(sun)
 
 def face(center, rpos):
     n = rpos.shape[0]
-    
+
     # normalize relative vectors
     normalized = np.zeros_like(rpos)
     for i in range(n):
@@ -49,7 +52,7 @@ def face(center, rpos):
     if np.dot(c_normal, sun) < 0.0:
         c_normal = - c_normal
         normals  = - normals
-    
+
     hue, sat = hue_sat[n]
     bri = 1
     r,g,b = colorsys.hsv_to_rgb(hue/360., sat, bri)
@@ -63,27 +66,6 @@ def face(center, rpos):
     return faces
 
 
-def hook4(lattice):
-    lattice.logger.info("Hook4: VPython (polyhedral expressions).")
-    graph = nx.Graph(lattice.spacegraph) #undirected
-    cellmat = lattice.repcell.mat
-    lattice.vpobjects = defaultdict(set)
-    for ring in cr.CountRings(graph, pos=lattice.reppositions).rings_iter(8):
-        deltas = np.zeros((len(ring),3))
-        for k,i in enumerate(ring):
-            d = lattice.reppositions[i] - lattice.reppositions[ring[0]]
-            d -= np.floor(d+0.5)
-            deltas[k] = d
-        comofs = np.sum(deltas, axis=0) / len(ring)
-        deltas -= comofs
-        com = lattice.reppositions[ring[0]] + comofs
-        com -= np.floor(com)
-        # rel to abs
-        com    = np.dot(com-0.5,    cellmat)
-        deltas = np.dot(deltas, cellmat)
-        ringsize = '{0}'.format(len(ring))
-        lattice.vpobjects[ringsize] |= face(com, deltas)
-    lattice.logger.info("Hook4: end.")
 
 
 
@@ -93,8 +75,8 @@ def hook4(lattice):
 
 
 def draw(lattice):
-    lattice.logger.info("Hook6: Display water molecules with VPython.")
-    lattice.logger.info("  Total number of atoms: {0}".format(len(lattice.atoms)))
+    logger = getLogger()
+    logger.info("  Total number of atoms: {0}".format(len(lattice.atoms)))
     cellmat = lattice.repcell.mat
     offset = (cellmat[0] + cellmat[1] + cellmat[2]) / 2
     # prepare the reverse dict
@@ -109,9 +91,9 @@ def draw(lattice):
             else:
                 waters[order]["H1"] = position - offset
     for order, water in waters.items():
-        O = water["O"]        
-        H0 = water["H0"]        
-        H1 = water["H1"]        
+        O = water["O"]
+        H0 = water["H0"]
+        H1 = water["H1"]
         lattice.vpobjects['w'].add(vp.simple_sphere(radius=0.03, pos=vp.vector(*O), color=vp.vector(1,0,0)))
         lattice.vpobjects['w'].add(vp.simple_sphere(radius=0.02, pos=vp.vector(*H0), color=vp.vector(0,1,1)))
         lattice.vpobjects['w'].add(vp.simple_sphere(radius=0.02, pos=vp.vector(*H1), color=vp.vector(0,1,1)))
@@ -131,25 +113,67 @@ def draw(lattice):
                 lattice.vpobjects['a'].add(vp.arrow(shaftwidth=0.015, pos=vp.vector(*H0), axis=vp.vector(*(O-H0)), color=vp.vector(1,1,0)))
             if rr1 < rr0 and rr1 < 0.245**2:
                 lattice.vpobjects['a'].add(vp.arrow(shaftwidth=0.015, pos=vp.vector(*H1), axis=vp.vector(*(O-H1)), color=vp.vector(1,1,0)))
-    lattice.logger.info("  Tips: use keys to draw/hide layers. [3 4 5 6 7 8 a w l]")
-    lattice.logger.info("  Tips: Type ctrl-C twice at the terminal to stop.")
-    lattice.logger.info("Hook6: end.")
-
-
-def hook6(lattice):
-    draw(lattice)
-    # Toggle visibility
-    visible = dict()
-    for L in lattice.vpobjects:
-        visible[L] = False
-    visible['l'] = True
-    while True:
-        ev = vp.scene.waitfor("keydown")
-        if ev.key in lattice.vpobjects:
-            for L in lattice.vpobjects[ev.key]:
-                L.visible = visible[ev.key]
-            visible[ev.key] = not visible[ev.key]
+    logger.info("  Tips: use keys to draw/hide layers. [3 4 5 6 7 8 a w l]")
+    logger.info("  Tips: Type ctrl-C twice at the terminal to stop.")
 
 
 
-hooks = {6:hook6, 4:hook4}
+
+
+
+class Format(genice2.formats.Format):
+    """
+    Visualize in a browser using VPython.
+    """
+    def hooks(self):
+        return {4:self.Hook4, 6:self.Hook6}
+
+    @timeit
+    @banner
+    def __init__(self, **kwargs):
+        "ArgParser (VPython)."
+        logger = getLogger()
+        for key, value in kwargs.items():
+            assert False, "  Wrong options."
+
+
+    @timeit
+    @banner
+    def Hook4(self, lattice):
+        "VPython (polyhedral expressions)."
+        graph = nx.Graph(lattice.spacegraph) #undirected
+        cellmat = lattice.repcell.mat
+        lattice.vpobjects = defaultdict(set)
+        for ring in cr.CountRings(graph, pos=lattice.reppositions).rings_iter(8):
+            deltas = np.zeros((len(ring),3))
+            for k,i in enumerate(ring):
+                d = lattice.reppositions[i] - lattice.reppositions[ring[0]]
+                d -= np.floor(d+0.5)
+                deltas[k] = d
+            comofs = np.sum(deltas, axis=0) / len(ring)
+            deltas -= comofs
+            com = lattice.reppositions[ring[0]] + comofs
+            com -= np.floor(com)
+            # rel to abs
+            com    = np.dot(com-0.5,    cellmat)
+            deltas = np.dot(deltas, cellmat)
+            ringsize = '{0}'.format(len(ring))
+            lattice.vpobjects[ringsize] |= face(com, deltas)
+
+
+    @timeit
+    @banner
+    def Hook6(self, lattice):
+        "Display water molecules with VPython."
+        draw(lattice)
+        # Toggle visibility
+        visible = dict()
+        for L in lattice.vpobjects:
+            visible[L] = False
+        visible['l'] = True
+        while True:
+            ev = vp.scene.waitfor("keydown")
+            if ev.key in lattice.vpobjects:
+                for L in lattice.vpobjects[ev.key]:
+                    L.visible = visible[ev.key]
+                visible[ev.key] = not visible[ev.key]

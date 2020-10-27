@@ -17,7 +17,7 @@ with codecs.open(os.path.join(os.path.dirname(__file__), 'genice_vpython', '__in
 long_desc = "".join(open("README.md").readlines())
 
 setup(
-    name='genice_vpython',
+    name='genice2_vpython',
     version=metadata['version'],
     description='VPYTHON format plugin for GenIce.',
     long_description=long_desc,
@@ -42,7 +42,7 @@ setup(
             'vpython      = genice_vpython.formats.vpython',
         ],
     },
-    install_requires=['vpython', 'genice<2.0', 'countrings>=0.1.7'],
+    install_requires=['vpython', 'genice2', 'countrings>=0.1.7'],
 
     license='MIT',
 )

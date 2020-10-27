@@ -8,6 +8,7 @@ version 0.4.3
 
 * vpython
 * genice<2.0
+* countrings>=0.1.7
 
 ## Installation from PyPI
 
