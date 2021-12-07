@@ -27,6 +27,7 @@ import networkx as nx
 import vpython as vp
 from countrings import countrings_nx as cr
 import genice2.formats
+from genice2.molecules import serialize
 from genice2.decorators import timeit, banner
 from logging import getLogger
 
@@ -57,11 +58,11 @@ def face(center, rpos):
     bri = 1
     r,g,b = colorsys.hsv_to_rgb(hue/360., sat, bri)
     pos = rpos + center
-    v_center = vp.vertex( pos=vp.vector(*center), normal=vp.vector(*c_normal), color=vp.vector(r,g,b))
-    vertices = [vp.vertex( pos=vp.vector(*p), normal=vp.vector(*(normals[i])), color=vp.vector(r,g,b) ) for i,p in enumerate(pos)]
+    v_center = vp.vertex( pos=vp.vector(*center), normal=vp.vector(*c_normal), color=vp.vector(r,g,b), opacity=0.75)
+    vertices = [vp.vertex( pos=vp.vector(*p), normal=vp.vector(*(normals[i])), color=vp.vector(r,g,b), opacity=0.75) for i,p in enumerate(pos)]
     faces = set()
     for i in range(n):
-        faces.add(vp.triangle(v0=vertices[i-1], v1=vertices[i], v2=v_center,  ))
+        faces.add(vp.triangle(v0=vertices[i-1], v1=vertices[i], v2=v_center ))
 #    group.add(sw.shapes.Polygon(pos, fill=rgb, stroke_linejoin="round", fill_opacity="1.0", stroke="#444", stroke_width=3))
     return faces
 
@@ -74,14 +75,17 @@ def face(center, rpos):
 
 
 
-def draw(lattice):
+def draw(ice):
     logger = getLogger()
-    logger.info("  Total number of atoms: {0}".format(len(lattice.atoms)))
-    cellmat = lattice.repcell.mat
+    atoms = []
+    for mols in ice.universe:
+        atoms += serialize(mols)
+    logger.info("  Total number of atoms: {0}".format(len(atoms)))
+    cellmat = ice.repcell.mat
     offset = (cellmat[0] + cellmat[1] + cellmat[2]) / 2
     # prepare the reverse dict
     waters = defaultdict(dict)
-    for atom in lattice.atoms:
+    for atom in atoms:
         resno, resname, atomname, position, order = atom
         if "O" in atomname:
             waters[order]["O"] = position - offset
@@ -94,27 +98,21 @@ def draw(lattice):
         O = water["O"]
         H0 = water["H0"]
         H1 = water["H1"]
-        lattice.vpobjects['w'].add(vp.simple_sphere(radius=0.03, pos=vp.vector(*O), color=vp.vector(1,0,0)))
-        lattice.vpobjects['w'].add(vp.simple_sphere(radius=0.02, pos=vp.vector(*H0), color=vp.vector(0,1,1)))
-        lattice.vpobjects['w'].add(vp.simple_sphere(radius=0.02, pos=vp.vector(*H1), color=vp.vector(0,1,1)))
-        lattice.vpobjects['w'].add(vp.cylinder(radius=0.015, pos=vp.vector(*O), axis=vp.vector(*(H0-O))))
-        lattice.vpobjects['w'].add(vp.cylinder(radius=0.015, pos=vp.vector(*O), axis=vp.vector(*(H1-O))))
-        lattice.vpobjects['l'].add(vp.label(pos=vp.vector(*O), xoffset=30, text="{0}".format(order), visible=False))
-    for i,j in lattice.spacegraph.edges(data=False):
+        ice.vpobjects['w'].add(vp.simple_sphere(radius=0.05, pos=vp.vector(*O), color=vp.vector(1,0,0)))
+        ice.vpobjects['w'].add(vp.simple_sphere(radius=0.025, pos=vp.vector(*H0), color=vp.vector(0,1,1)))
+        ice.vpobjects['w'].add(vp.simple_sphere(radius=0.025, pos=vp.vector(*H1), color=vp.vector(0,1,1)))
+        ice.vpobjects['w'].add(vp.cylinder(radius=0.015, pos=vp.vector(*O), axis=vp.vector(*(H0-O))))
+        ice.vpobjects['w'].add(vp.cylinder(radius=0.015, pos=vp.vector(*O), axis=vp.vector(*(H1-O))))
+        ice.vpobjects['l'].add(vp.label(pos=vp.vector(*O), xoffset=30, text="{0}".format(order), visible=False))
+    for i,j in ice.spacegraph.edges(data=False):
         if i in waters and j in waters:  # edge may connect to the dopant
             O = waters[j]["O"]
-            H0 = waters[i]["H0"]
-            H1 = waters[i]["H1"]
-            d0 = H0 - O
-            d1 = H1 - O
-            rr0 = np.dot(d0,d0)
-            rr1 = np.dot(d1,d1)
-            if rr0 < rr1 and rr0 < 0.27**2:
-                lattice.vpobjects['a'].add(vp.arrow(shaftwidth=0.015, pos=vp.vector(*H0), axis=vp.vector(*(O-H0)), color=vp.vector(1,1,0)))
-            if rr1 < rr0 and rr1 < 0.245**2:
-                lattice.vpobjects['a'].add(vp.arrow(shaftwidth=0.015, pos=vp.vector(*H1), axis=vp.vector(*(O-H1)), color=vp.vector(1,1,0)))
+            Oi = waters[i]["O"]
+            d = O - Oi
+            print(d@d)
+            if d@d < 0.3**2:
+                ice.vpobjects['a'].add(vp.arrow(shaftwidth=0.015, pos=vp.vector(*Oi), axis=vp.vector(*(O-Oi)), color=vp.vector(1,1,0)))
     logger.info("  Tips: use keys to draw/hide layers. [3 4 5 6 7 8 a w l]")
-    logger.info("  Tips: Type ctrl-C twice at the terminal to stop.")
 
 
 
@@ -135,45 +133,56 @@ class Format(genice2.formats.Format):
         logger = getLogger()
         for key, value in kwargs.items():
             assert False, "  Wrong options."
+        # prepare the canvas
+        # vp.canvas.background=vp.color.white
 
 
     @timeit
     @banner
-    def Hook4(self, lattice):
+    def Hook4(self, ice):
         "VPython (polyhedral expressions)."
-        graph = nx.Graph(lattice.spacegraph) #undirected
-        cellmat = lattice.repcell.mat
-        lattice.vpobjects = defaultdict(set)
-        for ring in cr.CountRings(graph, pos=lattice.reppositions).rings_iter(8):
+        graph = nx.Graph(ice.spacegraph) #undirected
+        cellmat = ice.repcell.mat
+        ice.vpobjects = defaultdict(set)
+        for ring in cr.CountRings(graph, pos=ice.reppositions).rings_iter(8):
             deltas = np.zeros((len(ring),3))
             for k,i in enumerate(ring):
-                d = lattice.reppositions[i] - lattice.reppositions[ring[0]]
+                d = ice.reppositions[i] - ice.reppositions[ring[0]]
                 d -= np.floor(d+0.5)
                 deltas[k] = d
             comofs = np.sum(deltas, axis=0) / len(ring)
             deltas -= comofs
-            com = lattice.reppositions[ring[0]] + comofs
+            com = ice.reppositions[ring[0]] + comofs
             com -= np.floor(com)
             # rel to abs
             com    = np.dot(com-0.5,    cellmat)
             deltas = np.dot(deltas, cellmat)
             ringsize = '{0}'.format(len(ring))
-            lattice.vpobjects[ringsize] |= face(com, deltas)
+            ice.vpobjects[ringsize] |= face(com, deltas)
 
 
     @timeit
     @banner
-    def Hook6(self, lattice):
+    def Hook6(self, ice):
         "Display water molecules with VPython."
-        draw(lattice)
+        draw(ice)
         # Toggle visibility
         visible = dict()
-        for L in lattice.vpobjects:
+        for L in ice.vpobjects:
             visible[L] = False
         visible['l'] = True
+        face_opacity = 1.0
         while True:
             ev = vp.scene.waitfor("keydown")
-            if ev.key in lattice.vpobjects:
-                for L in lattice.vpobjects[ev.key]:
+            if ev.key in ice.vpobjects:
+                for L in ice.vpobjects[ev.key]:
                     L.visible = visible[ev.key]
                 visible[ev.key] = not visible[ev.key]
+            elif ev.key == "<":
+                if face_opacity > 0.25:
+                    face_opacity -= 0.25
+                    for f in "345678":
+                        if f in ice.vpobjects:
+                            for L in ice.vpobjects[f]:
+                                # L.opacity = face_opacity
+                                print(L)

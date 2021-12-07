@@ -1,11 +1,12 @@
 .DELETE_ON_ERROR:
 
 test:
-	genice CS1 -r 2 2 2 -f vpython
+	genice2 CS1 -r 2 2 2 -f vpython
 
-%: temp_% replacer.py genice_vpython/formats/vpython.py genice_vpython/__init__.py
+%: temp_% replacer.py $(wildcard $(BASE)/formats/*.py) $(wildcard $(BASE)/*.py)
+	pip install genice2_dev
 	python replacer.py < $< > $@
-	-fgrep '%%' $@
+
 
 prepare: # might require root privilege.
 	pip install genice vpython

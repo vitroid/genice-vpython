@@ -10,7 +10,7 @@ import re
 #Copied from wheel package
 here = os.path.abspath(os.path.dirname(__file__))
 
-with codecs.open(os.path.join(os.path.dirname(__file__), 'genice_vpython', '__init__.py'),
+with codecs.open(os.path.join(os.path.dirname(__file__), 'genice2_vpython', '__init__.py'),
                  encoding='utf8') as version_file:
     metadata = dict(re.findall(r"""__([a-z]+)__ = "([^"]+)""", version_file.read()))
 
@@ -33,16 +33,16 @@ setup(
     url='https://github.com/vitroid/genice-vpython/',
     keywords=['genice', 'VPYTHON'],
 
-    packages=['genice_vpython',
-              'genice_vpython.formats',
+    packages=['genice2_vpython',
+              'genice2_vpython.formats',
     ],
 
     entry_points = {
-        'genice_format': [
-            'vpython      = genice_vpython.formats.vpython',
+        'genice2_format': [
+            'vpython      = genice2_vpython.formats.vpython',
         ],
     },
-    install_requires=['vpython', 'genice2', 'countrings>=0.1.7'],
+    install_requires=['vpython', 'genice2>=2.1', 'countrings>=0.1.7'],
 
     license='MIT',
 )

@@ -1,31 +1,41 @@
-# [genice-vpython](%%url%%)
+# [{{package}}]({{url}})
 
-A [GenIce](https://github.com/vitroid/GenIce) plugin to visualize the structure with [VPython](http://vpython.org).
+A {{genice}} plugin to visualize the structure with [VPython](http://vpython.org).
 
-version %%version%%
+version {{version}}
 
 ## Requirements
 
-* %%requires%%
+{% for i in requires %}
+* {{i}}
+{%- endfor %}
 
 ## Installation from PyPI
 
-    % pip install %%package%%
+```shell
+% pip install {{package}}
+```
 
 ## Manual Installation
 
 ### System-wide installation
 
-    % make install
+```shell
+% make install
+```
 
 ### Private installation
 
-Copy the files in genice_svg/formats/ into your local formats/ folder.
+Copy the files in {{base}}/formats/ into your local formats/ folder.
 
 ## Usage
 
-    %%usage%%
+{%- filter indent %}
+    {{usage_svg}}
+{%- endfilter %}
 
 ## Test in place
 
-    % make test
+```shell
+% make test
+```
